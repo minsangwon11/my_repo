@@ -1,0 +1,30 @@
+name: Ansible Patch CD
+
+on:
+  push:
+    branches: [ "main" ]  # main 브랜치에 코드가 올라오면 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Run Ansible Playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+        run: |
+          # 여기서 -e 옵션으로 변수를 동적으로 주입합니다.
+          ansible-playbook -i "${{ secrets.SERVER_IP }}," patch.yml \
+            -u user_name \
+            --private-key ssh_key_file \
+            -e "local_src_path=./patch.exe remote_dest_path=/home/user/bin/"
